@@ -76,22 +76,29 @@ with DAG(
 
         # Create table if it doesn't exist
         cursor.execute("""
-        CREATE TABLE IF NOT EXISTS youtube_trending (
+        CREATE TABLE IF NOT EXISTS youtube_trending3 (
             video_id VARCHAR PRIMARY KEY,
             title TEXT,
             channel TEXT,
             views BIGINT,
             likes BIGINT,
             comments BIGINT,
-            published_at TIMESTAMP
+            published_at TIMESTAMP,
+            trending_start TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  
+            last_trending_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP  
         );
         """)
 
-        # Insert transformed data
+        # Insert or update data
         insert_query = """
-        INSERT INTO youtube_trending (video_id, title, channel, views, likes, comments, published_at)
-        VALUES (%s, %s, %s, %s, %s, %s, %s)
-        ON CONFLICT (video_id) DO NOTHING;
+        INSERT INTO youtube_trending3 (video_id, title, channel, views, likes, comments, published_at, trending_start, last_trending_at)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+        ON CONFLICT (video_id) 
+        DO UPDATE 
+        SET views = EXCLUDED.views, 
+            likes = EXCLUDED.likes, 
+            comments = EXCLUDED.comments,
+            last_trending_at = CURRENT_TIMESTAMP;
         """
 
         records = [
@@ -108,8 +115,9 @@ with DAG(
         ]
 
         cursor.executemany(insert_query, records)
-        conn.commit()
+        conn.commit()  # Commit changes
         cursor.close()
+        conn.close()
 
     # DAG Workflow
     video_data = extract_trending_videos()
