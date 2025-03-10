@@ -87,6 +87,8 @@ scatter_chart = alt.Chart(top_videos).mark_circle(size=100).encode(
     size="engagement",
     color="title",
     tooltip=["title", "views", "engagement", "likes", "comments"]
-).interactive()
+).interactive().properties(
+    height=400
+)
 
 st.altair_chart(scatter_chart, use_container_width=True)

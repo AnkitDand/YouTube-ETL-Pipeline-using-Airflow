@@ -115,7 +115,7 @@ with DAG(
         ]
 
         cursor.executemany(insert_query, records)
-        conn.commit()  # Commit changes
+        conn.commit()  
         cursor.close()
         conn.close()
 
